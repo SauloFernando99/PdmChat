@@ -8,24 +8,24 @@ import java.util.Date
 import java.util.Locale
 
 @Parcelize
-data class Chat(
+data class Message(
     @get:NonNull
     var id: String = "",
     @get:NonNull
-    var remetente: String = "",
+    var sender: String = "",
     @get:NonNull
-    var destinatario: String = "",
+    var receiver: String = "",
     @get:NonNull
-    var data: String = "",
+    var message: String = "",
     @get:NonNull
-    var horario: String = "",
+    var time: String = "",
     @get:NonNull
-    var chat: String = ""
+    var date: String = ""
 ) : Parcelable{
     fun getDateTime(): Date? {
         val format = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
         return try {
-            format.parse("$data $horario")
+            format.parse("$date $time")
         } catch (e: Exception) {
             null
         }
