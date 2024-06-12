@@ -8,90 +8,87 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.pdmchat.controller.SaveRtDbFrController
-import com.example.pdmchat.databinding.SendChatActivityBinding
-import com.example.pdmchat.model.Chat
+import com.example.pdmchat.controller.SendMessageRtDbFrController
+import com.example.pdmchat.databinding.MessageActivityBinding
+import com.example.pdmchat.model.Constant.SENDER
+import com.example.pdmchat.model.Message
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class SendChatActivity : AppCompatActivity() {
-    private lateinit var sendChatBinding: SendChatActivityBinding
-    private val chatController: SaveRtDbFrController by lazy {
-        SaveRtDbFrController()
+class MessageActivity : AppCompatActivity() {
+    private lateinit var sendMessageBinding: MessageActivityBinding
+    private val messageController: SendMessageRtDbFrController by lazy {
+        SendMessageRtDbFrController()
     }
-    private lateinit var destinatarioEditText: AutoCompleteTextView
-    private lateinit var destinatariosAdapter: ArrayAdapter<String>
-    private lateinit var destinatariosList: MutableList<String>
+    private lateinit var receiverEt: AutoCompleteTextView
+    private lateinit var receiversAdapter: ArrayAdapter<String>
+    private lateinit var receiversList: MutableList<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        sendChatBinding = SendChatActivityBinding.inflate(layoutInflater)
-        setContentView(sendChatBinding.root)
+        sendMessageBinding = MessageActivityBinding.inflate(layoutInflater)
+        setContentView(sendMessageBinding.root)
 
-        destinatarioEditText = sendChatBinding.recipientEditText
+        receiverEt = sendMessageBinding.receiverEt
+        val contentEt: EditText = sendMessageBinding.messageEt
+        val sendBtn: Button = sendMessageBinding.sendBtn
 
-        val conteudoEditText: EditText = sendChatBinding.chatEditText
-        val enviarButton: Button = sendChatBinding.sendButton
+        receiversList = mutableListOf()
 
-        destinatariosList = mutableListOf()
+        val sharedPreferences = getSharedPreferences("Receivers", Context.MODE_PRIVATE)
+        val receiversSet = sharedPreferences.getStringSet("receivers", emptySet())
+        receiversList.addAll(receiversSet ?: emptySet())
 
-        val sharedPreferences = getSharedPreferences("Destinatarios", Context.MODE_PRIVATE)
-        val destinatariosSet = sharedPreferences.getStringSet("destinatarios", emptySet())
-        destinatariosList.addAll(destinatariosSet ?: emptySet())
-
-        destinatariosAdapter = ArrayAdapter(
+        receiversAdapter = ArrayAdapter(
             this,
             android.R.layout.simple_dropdown_item_1line,
-            destinatariosList
+            receiversList
         )
-        destinatarioEditText.setAdapter(destinatariosAdapter)
+        receiverEt.setAdapter(receiversAdapter)
 
-        val remetente = intent.getStringExtra("remetente")
+        val sender = intent.getStringExtra(SENDER)
 
-        enviarButton.setOnClickListener {
-            val destinatario = destinatarioEditText.text.toString()
-            val conteudo = conteudoEditText.text.toString()
+        sendBtn.setOnClickListener {
+            val receiver = receiverEt.text.toString()
+            val content = contentEt.text.toString()
 
-            if (conteudo.isNotEmpty()) {
-                if (destinatario.isNotEmpty()) {
-                    enviarChat(remetente, destinatario, conteudo)
+            if (content.isNotEmpty() && receiver.isNotEmpty()) {
+                sendMessage(sender, receiver, content)
 
-                    if (!destinatariosList.contains(destinatario)) {
-                        destinatariosList.add(destinatario)
-                        destinatariosAdapter.notifyDataSetChanged()
+                if (!receiversList.contains(receiver)) {
+                    receiversList.add(receiver)
+                    receiversAdapter.notifyDataSetChanged()
 
-                        val editor = sharedPreferences.edit()
-                        editor.putStringSet("destinatarios", destinatariosList.toSet())
-                        editor.apply()
-                    }
-                } else {
-                    Toast.makeText(this, "Digite o destinatário", Toast.LENGTH_SHORT).show()
+                    val editor = sharedPreferences.edit()
+                    editor.putStringSet("receivers", receiversList.toSet())
+                    editor.apply()
                 }
             } else {
-                Toast.makeText(this, "Digite o conteúdo da mensagem", Toast.LENGTH_SHORT).show()
+                val message = if (content.isEmpty()) "Insert message" else "Insert receiver"
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
             }
         }
     }
-    private fun enviarChat(remetente: String?, destinatario: String, conteudo: String) {
-        val mensagem = if (conteudo.length > 150) conteudo.substring(0, 150) else conteudo
+
+    private fun sendMessage(sender: String?, receiver: String, content: String) {
+        val text = content.take(150)
         val cal = Calendar.getInstance()
         val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-        val data = dateFormat.format(cal.time)
-        val horario = timeFormat.format(cal.time)
+        val date = dateFormat.format(cal.time)
+        val time = timeFormat.format(cal.time)
 
-        val chat = Chat(
-            remetente = remetente ?: "",
-            destinatario = destinatario,
-            data = data,
-            horario = horario,
-            chat = mensagem
+        val message = Message(
+            sender = sender.orEmpty(),
+            receiver = receiver,
+            date = date,
+            time = time,
+            message = text
         )
 
-        chatController.insertChat(chat)
-        Toast.makeText(this, "Mensagem enviada", Toast.LENGTH_SHORT).show()
-
+        messageController.sendMessage(message)
+        Toast.makeText(this, "Message Sent", Toast.LENGTH_SHORT).show()
         finish()
     }
 }
