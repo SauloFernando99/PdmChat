@@ -89,12 +89,12 @@ class MainActivity : AppCompatActivity() {
     fun saveUsername(view: View) {
         val username = usernameInput.text.toString().trim()
         if (username.isNotEmpty()) {
-            Toast.makeText(this, "Username salvo: $username", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Username saved: $username", Toast.LENGTH_SHORT).show()
             messageLv.visibility = View.VISIBLE
             usernameInput.visibility = View.GONE
             saveButton.visibility = View.GONE
         } else {
-            Toast.makeText(this, "Digite um username válido", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Insert a valid username", Toast.LENGTH_SHORT).show()
         }
     }
 
