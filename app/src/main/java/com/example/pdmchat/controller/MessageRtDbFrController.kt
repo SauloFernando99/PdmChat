@@ -10,7 +10,7 @@ import com.example.pdmchat.model.MessageDaoRtDbFrImpl
 class MessageRtDbFrController(private val mainActivity: MainActivity) {
     private val messageDaoImpl: MessageDao = MessageDaoRtDbFrImpl()
 
-    fun getChats() {
+    fun getMessages() {
         val messageList = messageDaoImpl.listMessages()
 
         if (messageList.isNotEmpty()) {

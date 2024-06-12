@@ -1,4 +1,4 @@
-package com.example.pdmchat.ui
+package com.example.pdmchat
 
 import android.content.Intent
 import android.os.Bundle
@@ -12,58 +12,57 @@ import android.widget.EditText
 import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import com.example.pdmchat.R
-import com.example.pdmchat.adapter.ChatAdapter
-import com.example.pdmchat.controller.ChatRtDbFrController
+import com.example.pdmchat.adapter.MessageAdapter
+import com.example.pdmchat.controller.MessageRtDbFrController
 import com.example.pdmchat.databinding.ActivityMainBinding
-import com.example.pdmchat.model.Chat
+import com.example.pdmchat.model.Constant.MESSAGE_ARRAY
+import com.example.pdmchat.model.Constant.SENDER
+import com.example.pdmchat.model.Message
+import com.example.pdmchat.ui.MessageActivity
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        const val GET_CHAT = 1
-        const val GET_CHATS_INTERVAL = 2000L
+        const val GET_MESSAGE = 1
+        const val GET_MESSAGES_INTERVAL = 2000L
     }
-    private lateinit var toolbar: Toolbar
 
     private val amb: ActivityMainBinding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
     }
 
-    private val chatList: MutableList<Chat> = mutableListOf()
+    private val messageList: MutableList<Message> = mutableListOf()
 
-    private val chatController: ChatRtDbFrController by lazy {
-        ChatRtDbFrController(this)
+    private val messageController: MessageRtDbFrController by lazy {
+        MessageRtDbFrController(this)
     }
 
-    private val chatAdapter: ChatAdapter by lazy {
-        ChatAdapter(this, chatList)
+    private val messageAdapter: MessageAdapter by lazy {
+        MessageAdapter(this, messageList)
     }
 
     private lateinit var usernameInput: EditText
     private lateinit var saveButton: View
     private lateinit var messageLv: ListView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(amb.root)
-        toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
-
-        usernameInput = findViewById(R.id.usernameInput)
-        saveButton = findViewById(R.id.saveButton)
-        messageLv = findViewById(R.id.messageLv)
-
-        uiUpdaterHandler.apply {
-            sendMessageDelayed(
-                android.os.Message.obtain().apply {
-                    what = GET_CHAT
-                },
-                GET_CHATS_INTERVAL
-            )
+        amb.toolbarIn.toolbar.apply {
+            subtitle = this@MainActivity.javaClass.simpleName
+            setSupportActionBar(this)
         }
 
-        amb.messageLv.adapter = chatAdapter
+        usernameInput = findViewById(R.id.usernameEt)
+        saveButton = findViewById(R.id.saveBtn)
+        messageLv = findViewById(R.id.messageLv)
+
+        uiUpdaterHandler.sendMessageDelayed(
+            android.os.Message.obtain().apply { what = GET_MESSAGE },
+            GET_MESSAGES_INTERVAL
+        )
+
+        amb.messageLv.adapter = messageAdapter
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -73,13 +72,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.add_chat -> {
-                val intent = Intent(this, SendChatActivity::class.java)
-                intent.putExtra("remetente", usernameInput.text.toString().trim())
+            R.id.send_message -> {
+                val intent = Intent(this, MessageActivity::class.java)
+                intent.putExtra(SENDER, usernameInput.text.toString().trim())
                 startActivity(intent)
                 true
             }
-            R.id.exit_app -> {
+            R.id.close_app -> {
                 finish()
                 true
             }
@@ -101,47 +100,42 @@ class MainActivity : AppCompatActivity() {
 
     val uiUpdaterHandler: Handler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: android.os.Message) {
-            super.handleMessage(msg)
-            Log.d("MainActivity", "Mensagem recebida: ${msg.what}")
-            if (msg.what == GET_CHAT) {
+            if (msg.what == GET_MESSAGE) {
                 sendMessageDelayed(
-                    android.os.Message.obtain().apply {
-                        what = GET_CHAT
-                    },
-                    GET_CHATS_INTERVAL
+                    android.os.Message.obtain().apply { what = GET_MESSAGE },
+                    GET_MESSAGES_INTERVAL
                 )
                 postDelayed({
-                    chatController.getChats()
+                    messageController.getMessages()
                 }, 1000)
             } else {
-                msg.data.getParcelableArrayList<Chat>("CHAT_ARRAY")?.let { _chatArray ->
-                    Log.d("MainActivity", "Chats recebidos: $_chatArray")
+                msg.data.getParcelableArrayList<Message>(MESSAGE_ARRAY)?.let { _messageArray ->
                     val username = usernameInput.text.toString().trim()
-                    updateChatsList(_chatArray.toMutableList(), username)
+                    updateMessagesList(_messageArray.toMutableList(), username)
                 }
             }
         }
     }
+
     private var isFirstLoad = true
-    fun updateChatsList(chats: MutableList<Chat>, username: String) {
-        val filteredChats = chats.filter { it.destinatario == username }.sortedByDescending { it.getDateTime() }
+
+    fun updateMessagesList(messages: MutableList<Message>, username: String) {
+        val filteredMessages = messages.filter { it.receiver == username }
+            .sortedByDescending { it.getDateTime() }
 
         if (isFirstLoad) {
-            chatList.clear()
+            messageList.clear()
             isFirstLoad = false
         }
 
-        if (chatList.isEmpty()) {
-            chatList.addAll(filteredChats)
+        if (messageList.isEmpty()) {
+            messageList.addAll(filteredMessages)
         } else {
-            for (chat in filteredChats) {
-                if (!chatList.contains(chat)) {
-                    chatList.add(0, chat)
-                }
-            }
-            chatList.retainAll(filteredChats)
+            filteredMessages.filterNot { messageList.contains(it) }
+                .forEach { messageList.add(0, it) }
+            messageList.retainAll(filteredMessages)
         }
-
-        chatAdapter.notifyDataSetChanged()
+        messageAdapter.notifyDataSetChanged()
     }
 }
+
