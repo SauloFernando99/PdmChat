@@ -1,6 +1,7 @@
 package com.example.pdmchat
 
 import android.os.Bundle
+import android.view.Menu
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -20,5 +21,10 @@ class MainActivity : AppCompatActivity() {
             subtitle = this@MainActivity.javaClass.simpleName
             setSupportActionBar(this)
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return super.onCreateOptionsMenu(menu)
     }
 }
