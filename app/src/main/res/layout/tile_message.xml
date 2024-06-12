@@ -20,7 +20,7 @@
         android:text="@string/message" />
 
     <TextView
-        android:id="@+id/date_time"
+        android:id="@+id/datetimeTv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/date_hour" />
