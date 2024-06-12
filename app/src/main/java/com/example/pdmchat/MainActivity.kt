@@ -1,12 +1,12 @@
-package com.example.pdmchat.ui
+package com.example.pdmchat
 
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
-import com.example.pdmchat.R
 import com.example.pdmchat.databinding.ActivityMainBinding
+import com.example.pdmchat.ui.MessageActivity
 
 class MainActivity : AppCompatActivity() {
 
