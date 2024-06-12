@@ -23,7 +23,6 @@ class MessageDaoRtDbFb: MessageDAO {
             object: ChildEventListener {
                 override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                     val contact = snapshot.getValue<Message>()
-                    //val contact = snapshot.getValue(Contact::class.java)
                     if (contact != null) {
                         messageList.add(contact)
                     }
