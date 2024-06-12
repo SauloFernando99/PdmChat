@@ -1,20 +1,17 @@
 package com.example.pdmchat.controller
 
-import android.util.Log
-import com.example.pdmchat.model.Chat
-import com.example.pdmchat.model.ChatDao
-import com.example.pdmchat.model.ChatDaoRtDbFrImpl
+import com.example.pdmchat.model.Message
+import com.example.pdmchat.model.MessageDao
+import com.example.pdmchat.model.MessageDaoRtDbFrImpl
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-class SaveRtDbFrController {
-    private val chatDaoImpl: ChatDao = ChatDaoRtDbFrImpl()
+class SendMessageRtDbFrController {
+    private val messageDaoImpl: MessageDao = MessageDaoRtDbFrImpl()
 
-    fun insertChat(chat: Chat) {
+    fun sendMessage(message: Message) {
         GlobalScope.launch {
-            chatDaoImpl.createChat(chat)
+            messageDaoImpl.sendMessage(message)
         }
-        Log.d("Firebase", "Enviando chat para o Firebase: $chat")
     }
-
 }
