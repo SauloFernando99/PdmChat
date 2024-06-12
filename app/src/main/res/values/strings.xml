@@ -2,4 +2,15 @@
     <string name="app_name">PdmChat</string>
     <string name="close_app">Close app</string>
     <string name="send_message">Send Message</string>
+    <string name="sender">Sender</string>
+    <string name="message">message</string>
+    <string name="date_hour">date/hour</string>
+    <string name="enter_username">Enter Username</string>
+    <string name="save">Save</string>
+    <string name="name">name</string>
+    <string name="datetime">dateTime</string>
+    <string name="insert_your_user_name">Insert your user name</string>
+    <string name="insert_the_receiver">Insert the receiver</string>
+    <string name="insert_the_message">Insert the message</string>
+    <string name="send">Send</string>
 </resources>

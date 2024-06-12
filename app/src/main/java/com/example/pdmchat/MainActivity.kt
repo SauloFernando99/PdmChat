@@ -1,4 +1,4 @@
-package com.example.pdmchat
+package com.example.pdmchat.ui
 
 import android.content.Intent
 import android.os.Bundle
@@ -8,83 +8,78 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
 import android.widget.EditText
 import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.pdmchat.adapter.MessageAdapter
-import com.example.pdmchat.controller.MessageRtDbFbController
+import androidx.appcompat.widget.Toolbar
+import com.example.pdmchat.R
+import com.example.pdmchat.adapter.ChatAdapter
+import com.example.pdmchat.controller.ChatRtDbFrController
 import com.example.pdmchat.databinding.ActivityMainBinding
-import com.example.pdmchat.model.Message
-import com.example.pdmchat.ui.MessageActivity
+import com.example.pdmchat.model.Chat
 
 class MainActivity : AppCompatActivity() {
+
     companion object {
-        const val GET_MESSAGE = 1
-        const val GET_MESSAGE_INTERVAL = 2000L
+        const val GET_CHAT = 1
+        const val GET_CHATS_INTERVAL = 2000L
     }
+    private lateinit var toolbar: Toolbar
 
     private val amb: ActivityMainBinding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
     }
 
-    private val messageList: MutableList<Message> = mutableListOf()
+    private val chatList: MutableList<Chat> = mutableListOf()
 
-    private val messageController: MessageRtDbFbController by lazy {
-        MessageRtDbFbController(this)
+    private val chatController: ChatRtDbFrController by lazy {
+        ChatRtDbFrController(this)
     }
 
-    private val messageAdapter: MessageAdapter by lazy {
-        MessageAdapter(this, messageList)
+    private val chatAdapter: ChatAdapter by lazy {
+        ChatAdapter(this, chatList)
     }
 
     private lateinit var usernameInput: EditText
-    private lateinit var saveButton: Button
+    private lateinit var saveButton: View
     private lateinit var messageLv: ListView
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(amb.root)
-        amb.toolbarIn.toolbar.apply {
-            subtitle = this@MainActivity.javaClass.simpleName
-            setSupportActionBar(this)
-        }
+        toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
 
         usernameInput = findViewById(R.id.usernameInput)
         saveButton = findViewById(R.id.saveButton)
-        messageLv = findViewById(R.id.messagesLv)
-
-        saveButton.setOnClickListener {
-            saveUsername()
-        }
-
-        amb.messagesLv.adapter = messageAdapter
+        messageLv = findViewById(R.id.messageLv)
 
         uiUpdaterHandler.apply {
             sendMessageDelayed(
                 android.os.Message.obtain().apply {
-                    what = GET_MESSAGE
+                    what = GET_CHAT
                 },
-                GET_MESSAGE_INTERVAL
+                GET_CHATS_INTERVAL
             )
         }
+
+        amb.messageLv.adapter = chatAdapter
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
+        menuInflater.inflate(R.menu.main_menu, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.sendMessage -> {
-                val intent = Intent(this, MessageActivity::class.java)
-                intent.putExtra("receiver", usernameInput.text.toString().trim())
+            R.id.add_chat -> {
+                val intent = Intent(this, SendChatActivity::class.java)
+                intent.putExtra("remetente", usernameInput.text.toString().trim())
                 startActivity(intent)
                 true
             }
-            R.id.closeApp -> {
+            R.id.exit_app -> {
                 finish()
                 true
             }
@@ -92,7 +87,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveUsername() {
+    fun saveUsername(view: View) {
         val username = usernameInput.text.toString().trim()
         if (username.isNotEmpty()) {
             Toast.makeText(this, "Username salvo: $username", Toast.LENGTH_SHORT).show()
@@ -108,46 +103,45 @@ class MainActivity : AppCompatActivity() {
         override fun handleMessage(msg: android.os.Message) {
             super.handleMessage(msg)
             Log.d("MainActivity", "Mensagem recebida: ${msg.what}")
-            if (msg.what == GET_MESSAGE) {
+            if (msg.what == GET_CHAT) {
                 sendMessageDelayed(
                     android.os.Message.obtain().apply {
-                        what = GET_MESSAGE
+                        what = GET_CHAT
                     },
-                    GET_MESSAGE_INTERVAL
+                    GET_CHATS_INTERVAL
                 )
                 postDelayed({
-                    messageController.getMessages()
+                    chatController.getChats()
                 }, 1000)
             } else {
-                msg.data.getParcelableArrayList<Message>("CHAT_ARRAY")?.let { _messageArray ->
-                    Log.d("MainActivity", "Mensagens recebidas: $_messageArray")
+                msg.data.getParcelableArrayList<Chat>("CHAT_ARRAY")?.let { _chatArray ->
+                    Log.d("MainActivity", "Chats recebidos: $_chatArray")
                     val username = usernameInput.text.toString().trim()
-                    updateChatsList(_messageArray.toMutableList(), username)
+                    updateChatsList(_chatArray.toMutableList(), username)
                 }
             }
         }
     }
-
     private var isFirstLoad = true
-    private fun updateChatsList(chats: MutableList<Message>, username: String) {
-        val filteredChats = chats.filter { it.reciever == username }.sortedByDescending { it.getDateTime() }
+    fun updateChatsList(chats: MutableList<Chat>, username: String) {
+        val filteredChats = chats.filter { it.destinatario == username }.sortedByDescending { it.getDateTime() }
 
         if (isFirstLoad) {
-            messageList.clear()
+            chatList.clear()
             isFirstLoad = false
         }
 
-        if (messageList.isEmpty()) {
-            messageList.addAll(filteredChats)
+        if (chatList.isEmpty()) {
+            chatList.addAll(filteredChats)
         } else {
             for (chat in filteredChats) {
-                if (!messageList.contains(chat)) {
-                    messageList.add(0, chat)
+                if (!chatList.contains(chat)) {
+                    chatList.add(0, chat)
                 }
             }
-            messageList.retainAll(filteredChats)
+            chatList.retainAll(filteredChats)
         }
 
-        messageAdapter.notifyDataSetChanged()
+        chatAdapter.notifyDataSetChanged()
     }
 }

@@ -6,41 +6,42 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import com.example.pdmchat.model.Chat
 import com.example.pdmchat.R
-import com.example.pdmchat.model.Message
 
-class MessageAdapter(context: Context, private val messageList: MutableList<Message>):
-    ArrayAdapter<Message>(context, R.layout.tile_message, messageList){
+class ChatAdapter(context: Context, private val chatList: MutableList<Chat>):
+    ArrayAdapter<Chat>(context, R.layout.tile_chat, chatList) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val message = messageList[position]
+        val chat = chatList[position]
+        val chatTileView: View
+        val holder: TileContactHolder
 
-        var messageTileView = convertView
-        if (messageTileView == null) {
-            messageTileView = LayoutInflater.from(context).inflate(
-                R.layout.tile_message,
-                parent,
-                false
-            ).apply{
-                tag = TileContactHolder(
-                    findViewById(R.id.senderTv),
-                    findViewById(R.id.messageTv),
-                    findViewById(R.id.datetimeTv)
-                )
-            }
+        if (convertView == null) {
+            chatTileView = LayoutInflater.from(context).inflate(R.layout.tile_chat, parent, false)
+            holder = TileContactHolder(
+                chatTileView.findViewById(R.id.nameTv),
+                chatTileView.findViewById(R.id.chatTv),
+                chatTileView.findViewById(R.id.dateTimeTv)
+            )
+            chatTileView.tag = holder
+        } else {
+            chatTileView = convertView
+            holder = chatTileView.tag as TileContactHolder
         }
 
-        (messageTileView?.tag as TileContactHolder).apply{
-            senderTv.text = message.sender
-            messageTv.text = message.text
-            messageTv.text = message.getDateTime().toString()
+        holder.apply {
+            nameTv.text = chat.remetente
+            chatTv.text = chat.chat
+            dateTimeTv.text = "${chat.data} ${chat.horario}"
         }
 
-        return messageTileView
+        return chatTileView
     }
 
     private data class TileContactHolder(
-        val senderTv: TextView, val messageTv: TextView, val datetimeTv: TextView
+        val nameTv: TextView,
+        val chatTv: TextView,
+        val dateTimeTv: TextView
     )
-
 }

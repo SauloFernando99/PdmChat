@@ -6,22 +6,22 @@
     android:layout_height="wrap_content">
 
     <TextView
-        android:id="@+id/senderTv"
+        android:id="@+id/nameTv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="24sp"
-        android:text="@string/sender" />
+        android:text="@string/name" />
 
     <TextView
-        android:id="@+id/messageTv"
+        android:id="@+id/chatTv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="24sp"
         android:text="@string/message" />
 
     <TextView
-        android:id="@+id/datetimeTv"
+        android:id="@+id/dateTimeTv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/date_hour" />
+        android:textSize="16sp"
+        android:text="@string/datetime" />
 </LinearLayout>
