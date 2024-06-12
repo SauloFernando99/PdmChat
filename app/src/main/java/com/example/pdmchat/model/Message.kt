@@ -21,14 +21,14 @@ data class Message(
     @NonNull
     var text: String = "",
     @NonNull
-    var time: String = "",
+    var date: String = "",
     @NonNull
     var hour: String = "",
 ): Parcelable{
     fun getDateTime(): Date? {
         val format = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
         return try {
-            format.parse("$time $hour")
+            format.parse("$date $hour")
         } catch (e: Exception) {
             null
         }
