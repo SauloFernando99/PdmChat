@@ -48,4 +48,10 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
+
+    // Firebase realtime database
+    implementation("com.google.firebase:firebase-database")
 }
