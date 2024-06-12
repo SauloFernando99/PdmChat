@@ -4,95 +4,76 @@ import android.util.Log
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.GenericTypeIndicator
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 
-class ChatDaoRtDbFrImpl : ChatDao {
+class MessageDaoRtDbFrImpl : MessageDao {
+
     companion object {
-        private const val CHAT_LIST_ROOT_NODE = "chat"
+        private const val CHAT_LIST_ROOT_NODE = "message"
     }
 
-    private val chatRtDbFbReference = Firebase.database.getReference(CHAT_LIST_ROOT_NODE)
+    private val messageRtDbFbReference = Firebase.database.getReference(CHAT_LIST_ROOT_NODE)
     private var isFirstValueEvent = true
-
-
-    private val chatList = mutableListOf<Chat>()
+    private val messageList = mutableListOf<Message>()
 
     init {
-
-        chatRtDbFbReference.addChildEventListener(object : ChildEventListener {
+        messageRtDbFbReference.addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                val chat = snapshot.getValue(Chat::class.java)
-                if (chat != null && !chatList.contains(chat)) {
-                    chatList.add(chat)
+                val message = snapshot.getValue(Message::class.java)
+                if (message != null && !messageList.contains(message)) {
+                    messageList.add(message)
                 }
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                val chat = snapshot.getValue(Chat::class.java)
-                if (chat != null) {
-                    val index = chatList.indexOfFirst { it.id == chat.id }
+                val message = snapshot.getValue(Message::class.java)
+                if (message != null) {
+                    val index = messageList.indexOfFirst { it.id == message.id }
                     if (index != -1) {
-                        chatList[index] = chat
+                        messageList[index] = message
                     }
                 }
             }
 
             override fun onChildRemoved(snapshot: DataSnapshot) {
-                val chat = snapshot.getValue(Chat::class.java)
-                if (chat != null) {
-                    chatList.remove(chat)
+                val message = snapshot.getValue(Message::class.java)
+                if (message != null) {
+                    messageList.remove(message)
                 }
             }
 
-            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
-                // NSA
-            }
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
 
-            override fun onCancelled(error: DatabaseError) {
-                // NSA
-            }
+            override fun onCancelled(error: DatabaseError) {}
         })
 
-        chatRtDbFbReference.addListenerForSingleValueEvent(object : ValueEventListener {
+        messageRtDbFbReference.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (isFirstValueEvent) {
                     isFirstValueEvent = false
-                    val chats = snapshot.children.mapNotNull { it.getValue(Chat::class.java) }
-                    if (chats.isNotEmpty()) {
-                        chatList.addAll(chats.filterNot { chatList.contains(it) })
-                        for (chat in chats) {
-                            println(chat)
-                        }
-                    } else {
-                        println("Nenhuma mensagem encontrada.")
+                    val messages = snapshot.children.mapNotNull { it.getValue(Message::class.java) }
+                    if (messages.isNotEmpty()) {
+                        messageList.addAll(messages.filterNot { messageList.contains(it) })
                     }
                 }
             }
 
-            override fun onCancelled(error: DatabaseError) {
-                // NSA
-            }
+            override fun onCancelled(error: DatabaseError) {}
         })
     }
 
-    override fun createChat(chat: Chat): Int {
-        val newChatRef = chatRtDbFbReference.push()
-        val id = newChatRef.key ?: return -1
-        chat.id = id
-        newChatRef.setValue(chat)
-        Log.d("Firebase", "Enviando chat para o Firebase: $chat")
+    override fun sendMessage(message: Message): Int {
+        val newMessageRef = messageRtDbFbReference.push()
+        val id = newMessageRef.key ?: return -1
+        message.id = id
+        newMessageRef.setValue(message)
         return 1
     }
 
-    override fun retrieveChats(): MutableList<Chat> {
-        return chatList
-    }
-
-    private fun createOrUpdateChat(chat: Chat) {
-        Log.d("Firebase", "Atualizando chat no banco de dados: $chat")
-        chatRtDbFbReference.child(chat.id.toString()).setValue(chat)
+    override fun listMessages(): MutableList<Message> {
+        return messageList
     }
 }
+
