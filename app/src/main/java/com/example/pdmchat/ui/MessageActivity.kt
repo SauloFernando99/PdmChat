@@ -1,7 +1,6 @@
-package com.example.pdmchat
+package com.example.pdmchat.ui
 
 import android.os.Bundle
-import android.view.Menu
 import androidx.appcompat.app.AppCompatActivity
 import com.example.pdmchat.databinding.ActivityMessageBinding
 
