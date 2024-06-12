@@ -9,17 +9,17 @@ import java.util.Locale
 
 @Parcelize
 data class Message(
-    @get:NonNull
+    @NonNull
     var id: String = "",
-    @get:NonNull
+    @NonNull
     var sender: String = "",
-    @get:NonNull
+    @NonNull
     var receiver: String = "",
-    @get:NonNull
+    @NonNull
     var message: String = "",
-    @get:NonNull
+    @NonNull
     var time: String = "",
-    @get:NonNull
+    @NonNull
     var date: String = ""
 ) : Parcelable{
     fun getDateTime(): Date? {
